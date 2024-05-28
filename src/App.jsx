@@ -1,12 +1,12 @@
 // eslint-disable-next-line
 import React from "react";
 import "./App.css";
-import Table from "./components/ShowProducts";
+import ShowProducts from "./components/ShowProducts";
 
 
 function App() {
   return (
-    <Table/>
+    <ShowProducts/>
   );
 }
 
