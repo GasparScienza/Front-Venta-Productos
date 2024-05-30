@@ -6,32 +6,49 @@ import "./ShowProducts.css"
 
 
 function ShowProducts() {
-    const url = "http://127.0.0.1:8080/productos";
-    const [products, setProducts] = useState([]);
-    const [operation, setOperation] = useState("");
-    const [title, setTitle] = useState("");
+  const url = "http://127.0.0.1:8080/productos";
+  const [products, setProducts] = useState([]);
+  const [title, setTitle] = useState("");
+  const [operacion, setOperacion] = useState("");
+  const [product, setProduct] = useState({
+    codigo_producto: 0,
+    cantidad_disponible: 0,
+    costo: "",
+    marca: "",
+    nombre: "",
+  });
+    
 
-    const cambiarTitle = (op) => {
-      setOperation(op);
-      if(op === 1){
-        setTitle("Registrar Producto");
-      }else if(op === 2){
+  const cambiarTitle = (op) => {
+    setOperacion(op);
+    if(op === 1){
+      setProduct({
+        codigo_producto: "",
+        cantidad_disponible: "",
+        costo: "",
+        marca: "",
+        nombre: "",
+      });
+      setTitle("Registrar Producto");
+    }else if(op === 2){
         setTitle("Editar Producto");
-      }
     }
+  }
+  useEffect(() => {
+    getProducts();
+  }, [])
 
+  const getProducts = async () => {
+    const respuesta = await axios.get(url);
+      setProducts(respuesta.data);
+  }
 
-
-    useEffect(() => {
-        getProducts();
-    }, [])
-
-    const getProducts = async () => {
-        const respuesta = await axios.get(url);
-        setProducts(respuesta.data);
-    }
-
-    const colums = [
+  const colums = [
+    {
+      name: "Codigo",
+      selector: row => row.codigo_producto,
+      sortable: true
+    },
       {
         name: "Nombre",
         selector: row => row.nombre,
@@ -48,6 +65,11 @@ function ShowProducts() {
         sortable: true
       },
       {
+        name: "Stock",
+        selector: row => row.cantidad_disponible,
+        sortable: true
+      },
+      {
         name: "Operacion",
         cell: row => (
             <div>
@@ -57,22 +79,21 @@ function ShowProducts() {
               <button onClick={() => handleDelete(row)} className="btn btn-danger">
                     <i className="fas fa-solid fa-trash"></i>
                 </button>
-            </div>
+            </div>    
         ),
         ignoreRowClick: true,
         allowOverflow: true,
-         button: true,
+        button: true,
       }
     ]
     const handleEdit = (row) => {
+        setProduct(row);
         cambiarTitle(2);
         console.log("Editar:", row);
-        // Agrega la lógica para editar
-      };
+    };
     
       const handleDelete = (row) => {
         console.log("Eliminar:", row);
-        // Agrega la lógica para eliminar
       };
 
     return (
@@ -80,6 +101,7 @@ function ShowProducts() {
         <div className="container-fluid">
           <div className="row mt-3">
             <div className="col-md-4 offset-md-4">
+              {/*Boton Añadir producto*/}
               <div className="d-grid mx-auto">
                 <button onClick={() => cambiarTitle(1)} className="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalProducts">
                   <i className="fa-solid fa-circle-plus"></i> Añadir
@@ -87,6 +109,7 @@ function ShowProducts() {
               </div>
             </div>
           </div>
+          {/*Tabla de productos*/}
           <div className="row mt-3">
             <div className="col-12 col-lg-12 offset-0 offset-lg-0">
               <div className="table-responsive">
@@ -101,9 +124,8 @@ function ShowProducts() {
             </div>
           </div>
         </div>
-        <ModalProducts title={title}/>
+        <ModalProducts title={title} producto={product} op={operacion}/>
       </div>
     );
 }
-
 export default ShowProducts
