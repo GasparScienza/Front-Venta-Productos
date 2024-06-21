@@ -3,11 +3,12 @@ import DataTable from "react-data-table-component";
 import axios from "axios";
 import ModalProducts from "./ModalProducts";
 import "./ShowProducts.css"
-
+import { manejarRespuesta } from "../ManejarRespuesta";
+import { getProducts } from "../getProducts";
+import BotonEditarEliminar from "./BotonEditarBorrar";
 
 function ShowProducts() {
   const url = "http://127.0.0.1:8080/productos";
-  const urlNew= "http://127.0.0.1:8080/productos/crear"
   const [products, setProducts] = useState([]);
   const [title, setTitle] = useState("");
   const [operacion, setOperacion] = useState("");
@@ -18,41 +19,14 @@ function ShowProducts() {
     marca: "",
     nombre: "",
   });
-  
-  const enviarSolicitud = async(parametro , metodo) =>{
-    if(metodo === "POST"){
-      await axios({method:metodo, url: (url + "/crear"), data:parametro}).then(function(respuesta){
-        let tipo = respuesta.data[0];
-        let msj = respuesta.data[0];
-        if(tipo === 'success'){
-          getProducts();
-        }
-      }).catch(function(error){
-        alert('Error en la solicitud');
-        console.log(error);
-      })
-    }else if(metodo === "PUT"){
-      await axios({method:metodo, url: (url + `/editar/${parametro.codigo_producto}`), data:parametro}).then(function(respuesta){
-        let tipo = respuesta.data[0];
-        let msj = respuesta.data[0];
-        if(tipo === 'success'){
-          getProducts();
-        }
-      }).catch(function(error){
-        alert('Error en la solicitud');
-        console.log(error);
-      })
-    }else if(metodo === "DELETE"){
-      await axios({method:metodo, url: (url + `/eliminar/${parametro.codigo_producto}`), data:parametro}).then(function(respuesta){
-        let tipo = respuesta.data[0];
-        let msj = respuesta.data[0];
-        if(tipo === 'success'){
-          getProducts();
-        }
-      }).catch(function(error){
-        alert('Error en la solicitud');
-        console.log(error);
-      })
+
+  const enviarSolicitud = async (parametro, metodo) => {
+    if (metodo === "POST") {
+        await manejarRespuesta(metodo, (url + "/crear"), parametro);
+    } else if (metodo === "PUT") {
+        await manejarRespuesta(metodo, (url + `/editar/${parametro.codigo_producto}`), parametro);
+    } else if (metodo === "DELETE") {
+        await manejarRespuesta(metodo, (url + `/eliminar/${parametro.codigo_producto}`), parametro);
     }
   }
 
@@ -73,13 +47,8 @@ function ShowProducts() {
   }
 
   useEffect(() => {
-    getProducts();
+    getProducts({url ,setProducts});
   }, [products])
-
-  const getProducts = async () => {
-    const respuesta = await axios.get(url);
-      setProducts(respuesta.data);
-  }
 
   const colums = [
     {
@@ -107,10 +76,11 @@ function ShowProducts() {
         selector: row => row.cantidad_disponible,
         sortable: true
       },
-      {
+      /*{
         name: "Operacion",
         cell: row => (
             <div>
+              <BotonEditarEliminar borrar={handleDelete}/>
               <button onClick={() => handleEdit(row)} className="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalProducts">
                 <i className="fas fa-solid fa-edit"></i>
               </button>
@@ -122,7 +92,18 @@ function ShowProducts() {
         ignoreRowClick: true,
         allowOverflow: true,
         button: true,
-      }
+      }*/
+        {
+          name: "Operacion",
+          cell: row => (
+              <div>
+                <BotonEditarEliminar borrar={handleDelete} editar={handleEdit} parametro={row}/>
+              </div>    
+          ),
+          ignoreRowClick: true,
+          allowOverflow: true,
+          button: true,
+        }
     ]
     const handleEdit = (row) => {
         setProduct(row);
