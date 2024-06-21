@@ -7,6 +7,7 @@ import "./ShowProducts.css"
 
 function ShowProducts() {
   const url = "http://127.0.0.1:8080/productos";
+  const urlNew= "http://127.0.0.1:8080/productos/crear"
   const [products, setProducts] = useState([]);
   const [title, setTitle] = useState("");
   const [operacion, setOperacion] = useState("");
@@ -17,26 +18,63 @@ function ShowProducts() {
     marca: "",
     nombre: "",
   });
-    
+  
+  const enviarSolicitud = async(parametro , metodo) =>{
+    if(metodo === "POST"){
+      await axios({method:metodo, url: (url + "/crear"), data:parametro}).then(function(respuesta){
+        let tipo = respuesta.data[0];
+        let msj = respuesta.data[0];
+        if(tipo === 'success'){
+          getProducts();
+        }
+      }).catch(function(error){
+        alert('Error en la solicitud');
+        console.log(error);
+      })
+    }else if(metodo === "PUT"){
+      await axios({method:metodo, url: (url + `/editar/${parametro.codigo_producto}`), data:parametro}).then(function(respuesta){
+        let tipo = respuesta.data[0];
+        let msj = respuesta.data[0];
+        if(tipo === 'success'){
+          getProducts();
+        }
+      }).catch(function(error){
+        alert('Error en la solicitud');
+        console.log(error);
+      })
+    }else if(metodo === "DELETE"){
+      await axios({method:metodo, url: (url + `/eliminar/${parametro.codigo_producto}`), data:parametro}).then(function(respuesta){
+        let tipo = respuesta.data[0];
+        let msj = respuesta.data[0];
+        if(tipo === 'success'){
+          getProducts();
+        }
+      }).catch(function(error){
+        alert('Error en la solicitud');
+        console.log(error);
+      })
+    }
+  }
 
   const cambiarTitle = (op) => {
     setOperacion(op);
     if(op === 1){
       setProduct({
-        codigo_producto: "",
-        cantidad_disponible: "",
-        costo: "",
-        marca: "",
-        nombre: "",
+        codigo_producto: 0,
+        cantidad_disponible: 0,
+        costo: '',
+        marca: '',
+        nombre: ''
       });
       setTitle("Registrar Producto");
     }else if(op === 2){
-        setTitle("Editar Producto");
+      setTitle("Editar Producto");
     }
   }
+
   useEffect(() => {
     getProducts();
-  }, [])
+  }, [products])
 
   const getProducts = async () => {
     const respuesta = await axios.get(url);
@@ -77,8 +115,8 @@ function ShowProducts() {
                 <i className="fas fa-solid fa-edit"></i>
               </button>
               <button onClick={() => handleDelete(row)} className="btn btn-danger">
-                    <i className="fas fa-solid fa-trash"></i>
-                </button>
+                <i className="fas fa-solid fa-trash"></i>
+              </button>
             </div>    
         ),
         ignoreRowClick: true,
@@ -93,6 +131,7 @@ function ShowProducts() {
     };
     
       const handleDelete = (row) => {
+        enviarSolicitud(row ,'DELETE');
         console.log("Eliminar:", row);
       };
 
@@ -124,7 +163,8 @@ function ShowProducts() {
             </div>
           </div>
         </div>
-        <ModalProducts title={title} producto={product} op={operacion}/>
+        <ModalProducts title={title} producto={product} op={operacion} enviSol={enviarSolicitud}/>
+        
       </div>
     );
 }
